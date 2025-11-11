@@ -1,15 +1,9 @@
 {
   "version": 2,
   "builds": [
-    { "src": "index.js", "use": "@vercel/node" }
+    { "src": "api/**/*.js", "use": "@vercel/node" }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "index.js" }
-  ],
-  "env": {
-    "OPENAI_API_KEY": "@openai_api_key",
-    "NEWS_API_KEY": "@news_api_key",
-    "TELEGRAM_TOKEN": "@telegram_token",
-    "CHAT_ID": "@chat_id"
-  }
+    { "src": "/api/(.*)", "dest": "/api/$1.js" }
+  ]
 }
