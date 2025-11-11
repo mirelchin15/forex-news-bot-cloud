@@ -4,46 +4,46 @@ import fetch from "node-fetch";
 const app = express();
 app.use(express.json());
 
-// Telegram məlumatları
-const TELEGRAM_TOKEN = "8397007603:AAHdIwCyHakw_2QFfSc0-dTM7fc1jCuJcGY";
-const CHAT_ID = "6512494476";
-
-// API-lər
-const NEWSDATA_API = "pub_d5a139e5d39b4da7a30938d14ca93d58";
+// 🔹 Environment dəyişənlər (Vercel mühitindən oxunur)
+const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
+const CHAT_ID = process.env.CHAT_ID;
 const OPENAI_API = process.env.OPENAI_API_KEY;
+const NEWSDATA_API = process.env.NEWS_API_KEY;
 
-// 🔹 1. Xəbərləri alır
-async function getForexNews() {
-  const url = `https://newsdata.io/api/1/news?apikey=${NEWSDATA_API}&q=forex OR usd OR eurusd OR gold OR oil&language=en`;
-  const response = await fetch(url);
-  const data = await response.json();
+// ✅ 1. Vacib iqtisadi xəbərləri alır
+async function getImportantNews() {
+  const url = `https://newsdata.io/api/1/news?apikey=${NEWSDATA_API}&q=forex OR usd OR eurusd OR gold OR fomc OR "rate decision" OR inflation OR "non farm payroll" OR "fed statement" OR ecb OR gdp OR "interest rate"&language=en&country=us,gb,eu`;
 
-  if (!data.results || data.results.length === 0) {
-    return "Heç bir xəbər tapılmadı.";
-  }
+  const res = await fetch(url);
+  const data = await res.json();
 
-  const topNews = data.results.slice(0, 3).map((n, i) => {
-    return `📰 ${i + 1}. ${n.title}\n${n.description || ""}\n🔗 ${n.link}\n`;
+  if (!data.results || data.results.length === 0) return "⚠️ Vacib xəbər tapılmadı.";
+
+  const filtered = data.results.slice(0, 5).map((n, i) => {
+    return `📰 *${i + 1}. ${n.title}*\n${n.description || ""}\n🔗 ${n.link}\n`;
   }).join("\n");
 
-  return topNews;
+  return filtered;
 }
 
-// 🔹 2. ChatGPT ilə analiz edir (BUY / SELL qərarı)
-async function analyzeNewsWithAI(newsText) {
+// ✅ 2. ChatGPT ilə analiz (vacib xəbər üçün BUY / SELL)
+async function analyzeWithAI(newsText) {
   const prompt = `
-Sən peşəkar Forex analitikasısan. Aşağıdakı xəbərləri oxu və qərar ver:
-BUY, SELL və ya NEUTRAL.
-Əsas fokus: USD, EUR, GOLD.
-Cavabı bu formatda ver:
+Sən 30 illik təcrübəli Forex analitikasısan.
+Aşağıdakı xəbərləri analiz et və qərar ver:
+- Əgər USD güclənəcəksə: BUY USD
+- Əgər USD zəifləyəcəksə: SELL USD
+- Əgər xəbər neytraldırsa: NEUTRAL
+
+Nəticəni bu formatda ver:
 Decision: BUY / SELL / NEUTRAL
-Reason: qısa izah.
+Reason: Qısa, aydın izah.
 
 Xəbərlər:
 ${newsText}
-  `;
+`;
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+  const aiRes = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -52,38 +52,51 @@ ${newsText}
     body: JSON.stringify({
       model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
-      max_tokens: 150
+      max_tokens: 200
     })
   });
 
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content || "Analiz alına bilmədi.";
+  const data = await aiRes.json();
+  return data.choices?.[0]?.message?.content || "❌ AI cavabı alına bilmədi.";
 }
 
-// 🔹 3. Telegrama göndərir
+// ✅ 3. Nəticəni Telegrama göndərir
 async function sendToTelegram(text) {
   const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
   await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: CHAT_ID, text, parse_mode: "Markdown" })
+    body: JSON.stringify({
+      chat_id: CHAT_ID,
+      text,
+      parse_mode: "Markdown"
+    })
   });
 }
 
-// 🔹 4. API Route
+// ✅ 4. Əsas route (cron və ya əl ilə test üçün)
 app.get("/", async (req, res) => {
   try {
-    const news = await getForexNews();
-    const aiResult = await analyzeNewsWithAI(news);
-    const finalText = `📊 *Forex News Summary:*\n\n${news}\n\n🤖 *AI Decision:*\n${aiResult}`;
+    const news = await getImportantNews();
+    const aiDecision = await analyzeWithAI(news);
 
-    await sendToTelegram(finalText);
-    res.send("✅ Xəbərlər və AI analiz Telegrama göndərildi!");
+    const message = `
+📢 *HIGH IMPACT FOREX NEWS ALERT*
+
+${news}
+
+🤖 *AI Decision:*
+${aiDecision}
+`;
+
+    await sendToTelegram(message);
+    res.send("✅ Vacib xəbərlər analiz olundu və Telegrama göndərildi.");
   } catch (err) {
     console.error(err);
     res.status(500).send("❌ Xəta baş verdi.");
   }
 });
 
+// ✅ 5. Serveri işə salır
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server işləyir: http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`✅ Server aktivdir: http://localhost:${PORT}`));
