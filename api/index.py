@@ -3,7 +3,7 @@ import os
 
 app = FastAPI()
 
-@app.get("/api")
+@app.get("/")
 def ping():
     return {
         "ok": True,
