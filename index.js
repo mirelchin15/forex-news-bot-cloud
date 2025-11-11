@@ -33,3 +33,9 @@ app.get("/", async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// ✅ Telegram test route
+app.get("/test", async (req, res) => {
+  const sent = await sendToTelegram("📡 Test message from /test endpoint!");
+  if (sent) res.send("✅ Telegram message sent successfully!");
+  else res.send("❌ Telegram test failed!");
+});
