@@ -3,7 +3,7 @@ import os
 
 app = FastAPI()
 
-@app.get("/")
+@app.get("/api")
 def ping():
     return {
         "ok": True,
@@ -13,7 +13,7 @@ def ping():
         "chat_id_set": bool(os.getenv("CHAT_ID")),
     }
 
-@app.post("/")
+@app.post("/api")
 async def main(req: Request):
     data = await req.json()
     return {"received": data}
