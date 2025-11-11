@@ -89,7 +89,8 @@ async function sendToTelegram(text) {
 
 // ✅ 4. Əsas route (test üçün)
 app.get("/", async (req, res) => {
-  try {
+  try {await sendToTelegram("🔍 Debug: Bot started pipeline...");
+
     console.log("🚀 Starting news + AI pipeline...");
     const news = await getImportantNews();
     const aiDecision = await analyzeWithAI(news);
