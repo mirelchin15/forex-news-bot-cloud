@@ -36,7 +36,7 @@ IMPORTANT RULES:
 - NO hypothetical language like "if..." or "based on typical scenarios"
 - If an article does not clearly suggest a trade direction, mark it as NEUTRAL
 
-NEWS ARTICLES TO ANALYZE:\n\n" + articles.map(a => `Title: \${a.title}\nDescription: \${a.description || 'No description'}\n`).join('\n')
+NEWS ARTICLES TO ANALYZE:\n\n" + articles.map(a => `Title: ${a.title}\nDescription: ${a.description || 'No description'}\n`).join('\n')
     
     console.log("Sending to OpenAI...");
     const openaiUrl = "https://api.openai.com/v1/chat/completions";
