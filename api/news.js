@@ -79,7 +79,9 @@ News to analyze:
 ${articles.map(a => `Title: ${a.title}\nDescription: ${a.description || 'No description'}`).join('\n\n')}`;
     
     console.log("Sending to OpenAI...");
-    const openaiUrl = "https://api.openai.com/v1/chat/completions";
+
+        // NEW: Use OpenAI Responses API with web search
+    const openaiUrl = "https://api.openai.com/v1/responses";
     const aiResponse = await fetch(openaiUrl, {
       method: "POST",
       headers: {
@@ -88,29 +90,23 @@ ${articles.map(a => `Title: ${a.title}\nDescription: ${a.description || 'No desc
       },
       body: JSON.stringify({
         model: "gpt-4o",
-        messages: [{
-          role: "system",
-          content: "You are a professional forex trading analyst. Provide clear, actionable trading signals."
-        }, {
-          role: "user",
-          content: summaryPrompt
-        }],
-        temperature: 0.7,
-        max_tokens: 500
+        input: summaryPrompt,
+        tools: [{ type: "web_search" }],
+        tool_choice: "auto"
       })
     });
-
+    
     const aiData = await aiResponse.json();
     console.log("OpenAI response:", JSON.stringify(aiData).substring(0, 300));
 
-    // Better error handling for OpenAI response
+    // Extract signal from new response format
     let signalText = "No signal generated.";
     
     if (aiData.error) {
       console.error("OpenAI Error:", aiData.error);
       signalText = `❌ OpenAI Error: ${aiData.error.message || 'Unknown error'}`;
-    } else if (aiData.choices && aiData.choices.length > 0 && aiData.choices[0].message) {
-      signalText = aiData.choices[0].message.content;
+    } else if (aiData.output_text) {
+      signalText = aiData.output_text;
       console.log("Signal generated successfully:", signalText.substring(0, 100));
     } else {
       console.error("Unexpected OpenAI response structure:", aiData);
