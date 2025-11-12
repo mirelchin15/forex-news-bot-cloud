@@ -52,14 +52,21 @@ export default async function handler(req, res) {
 
     // Step 2: Analyze news with OpenAI
     const articles = newsData.data.slice(0, 5);
-        const summaryPrompt = `You are a professional forex trading analyst. Analyze these forex news articles and provide 2-3 SPECIFIC trading signals with EXACT entry points, stop loss, and take profit levels.
+      const summaryPrompt = `CRITICAL: Before generating signals, you MUST search the web for current forex prices.
+
+STEP 1: Search for "EUR/USD current price", "GBP/USD current price", "USD/JPY current price" to get TODAY's real-time market prices.
+
+STEP 2: Based on the news below and the current prices you found from web search, create detailed forex trading signals.
+
+News to analyze:
+${articles.map(a => `Title: ${a.title}\nDescription: ${a.description || 'No description'}`).join('\n\n')}
 
 For EACH signal, you MUST include:
 - Currency Pair (e.g., EUR/USD)
 - Signal Type: BUY or SELL
-- Entry Price (realistic current market price)
-- Stop Loss (specific price level)
-- Take Profit 1 & TP2 (specific price levels)
+- Entry Price (use the REAL current price from your web search)
+- Stop Loss (specific price level with pip count)
+- Take Profit 1 & TP2 (specific price levels with pip counts)
 - Risk/Reward Ratio
 - Brief reason (based on news impact)
 
@@ -68,14 +75,15 @@ Format your response like this:
 🔔 SIGNAL #1
 💱 Pair: EUR/USD
 📊 Action: BUY
-📍 Entry: 1.0850
-🛑 Stop Loss: 1.0820 (-30 pips)
-🎯 TP1: 1.0900 (+50 pips)
-🎯 TP2: 1.0950 (+100 pips)
+📍 Entry: 1.0876 (use real price from web search)
+🛑 Stop Loss: 1.0846 (-30 pips)
+🎯 TP1: 1.0926 (+50 pips)
+🎯 TP2: 1.0976 (+100 pips)
 ⚡ Risk/Reward: 1:2
 📰 Reason: Strong USD weakness from news
 
-News to analyze:
+IMPORTANT: You have web search enabled. USE IT to find current forex prices before generating signals!`;
+
 ${articles.map(a => `Title: ${a.title}\nDescription: ${a.description || 'No description'}`).join('\n\n')}`;
     
     console.log("Sending to OpenAI...");
