@@ -21,7 +21,22 @@ export default async function handler(req, res) {
 
     // Step 2: Analyze news with OpenAI
     const articles = newsData.data.slice(0, 5);
-    const summaryPrompt = `Analyze these forex news and provide trading signals (BUY, SELL, or NEUTRAL). Be specific about currency pairs and reasoning:\n\n${articles.map(a => `Title: ${a.title}\nDescription: ${a.description || 'No description'}`).join('\n\n')}`;
+    const summaryPrompt = `CRITICAL: You MUST analyze ONLY the specific news articles provided below. Do NOT use hypothetical scenarios or general market knowledge.
+
+For EACH article below:
+1. Read the title and description carefully
+2. Identify which currency pair(s) it affects
+3. Determine if it suggests BUY, SELL, or NEUTRAL
+4. Provide specific Entry price, Stop Loss (SL), and Take Profit (TP) levels
+
+IMPORTANT RULES:
+- ONLY analyze the articles listed below - do NOT make assumptions
+- MUST reference specific article titles in your analysis
+- MUST provide exact Entry/SL/TP price levels
+- NO hypothetical language like "if..." or "based on typical scenarios"
+- If an article does not clearly suggest a trade direction, mark it as NEUTRAL
+
+NEWS ARTICLES TO ANALYZE:\n\n" + articles.map(a => `Title: \${a.title}\nDescription: \${a.description || 'No description'}\n`).join('\n')
     
     console.log("Sending to OpenAI...");
     const openaiUrl = "https://api.openai.com/v1/chat/completions";
@@ -35,7 +50,7 @@ export default async function handler(req, res) {
         model: "gpt-4o",
         messages: [{
           role: "system",
-          content: "You are a professional forex trading analyst. Provide clear, actionable trading signals."
+          content: "You are a professional forex trading analyst. Your job is to analyze the SPECIFIC news articles provided and give trading signals based on them. RULES: 1) Reference specific article titles, 2) Provide Entry/SL/TP levels, 3) NO hypothetical scenarios."
         }, {
           role: "user",
           content: summaryPrompt
