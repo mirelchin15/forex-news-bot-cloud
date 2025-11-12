@@ -82,9 +82,8 @@ Format your response like this:
 ⚡ Risk/Reward: 1:2
 📰 Reason: Strong USD weakness from news
 
-IMPORTANT: You have web search enabled. USE IT to find current forex prices before generating signals!`;
+IMPORTANT: You have web search enabled. USE IT to find current forex prices before generating signals!`;`;
 
-${articles.map(a => `Title: ${a.title}\nDescription: ${a.description || 'No description'}`).join('\n\n')}`;
     
     console.log("Sending to OpenAI...");
 
