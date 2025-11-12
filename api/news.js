@@ -32,7 +32,7 @@ export default async function handler(req, res) {
         "Authorization": `Bearer ${OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: "o4-mini",
+        model: "gpt-4o",
         messages: [{
           role: "system",
           content: "You are a professional forex trading analyst. Provide clear, actionable trading signals."
