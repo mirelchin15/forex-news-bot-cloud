@@ -8,11 +8,10 @@ export default async function handler(req, res) {
 
   try {
     // 📰 Step 1: Fetch latest Forex news
-    const newsUrl = `https://newsapi.org/v2/everything?q=forex OR currency OR dollar OR euro&language=en&sortBy=publishedAt&pageSize=5&apiKey=${NEWS_API_KEY}`;
-    const newsResponse = await fetch(newsUrl);
+    const newsUrl = `https://api.thenewsapi.com/v1/news/all?api_token=${NEWS_API_KEY}&language=en&search=forex&limit=5`;    const newsResponse = await fetch(newsUrl);
     const newsData = await newsResponse.json();
 
-    if (!newsData.articles || newsData.articles.length === 0) {
+    if (!newsData. || newsData.data.length === 0) {
       return res.status(200).send("No forex news found.");
     }
 
@@ -25,8 +24,7 @@ export default async function handler(req, res) {
       Only include strong signals (BUY or SELL) in your summary.
       
       News:
-      ${newsData.articles.map(a => a.title).join("\n")}
-    `;
+      ${newsData.data.map(a => a.title).join("\n")}}    `;
 
     const aiResponse = await fetch(openaiUrl, {
       method: "POST",
