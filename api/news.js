@@ -105,8 +105,7 @@ ${articles.map(a => `Title: ${a.title}\nDescription: ${a.description || 'No desc
     if (aiData.error) {
       console.error("OpenAI Error:", aiData.error);
       signalText = `❌ OpenAI Error: ${aiData.error.message || 'Unknown error'}`;
-    } else if (aiData.output_text) {
-      signalText = aiData.output_text;
+      } else if (aiData.output && aiData.output[0] && aiData.output[0].content && aiData.output[0].content[0]) {      signalText = aiData.output[0].content[0].text;
       console.log("Signal generated successfully:", signalText.substring(0, 100));
     } else {
       console.error("Unexpected OpenAI response structure:", aiData);
