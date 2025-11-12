@@ -52,7 +52,31 @@ export default async function handler(req, res) {
 
     // Step 2: Analyze news with OpenAI
     const articles = newsData.data.slice(0, 5);
-    const summaryPrompt = `Analyze these forex news and provide trading signals (BUY, SELL, or NEUTRAL). Be specific about currency pairs and reasoning:\n\n${articles.map(a => `Title: ${a.title}\nDescription: ${a.description || 'No description'}`).join('\n\n')}`;
+        const summaryPrompt = `You are a professional forex trading analyst. Analyze these forex news articles and provide 2-3 SPECIFIC trading signals with EXACT entry points, stop loss, and take profit levels.
+
+For EACH signal, you MUST include:
+- Currency Pair (e.g., EUR/USD)
+- Signal Type: BUY or SELL
+- Entry Price (realistic current market price)
+- Stop Loss (specific price level)
+- Take Profit 1 & TP2 (specific price levels)
+- Risk/Reward Ratio
+- Brief reason (based on news impact)
+
+Format your response like this:
+
+🔔 SIGNAL #1
+💱 Pair: EUR/USD
+📊 Action: BUY
+📍 Entry: 1.0850
+🛑 Stop Loss: 1.0820 (-30 pips)
+🎯 TP1: 1.0900 (+50 pips)
+🎯 TP2: 1.0950 (+100 pips)
+⚡ Risk/Reward: 1:2
+📰 Reason: Strong USD weakness from news
+
+News to analyze:
+${articles.map(a => `Title: ${a.title}\nDescription: ${a.description || 'No description'}`).join('\n\n')}`;
     
     console.log("Sending to OpenAI...");
     const openaiUrl = "https://api.openai.com/v1/chat/completions";
