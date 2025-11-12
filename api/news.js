@@ -35,24 +35,7 @@ export default async function handler(req, res) {
         model: "gpt-4o",
         messages: [{
           role: "system",
-          content: "You are a professional forex trading analyst. Based on the news provided, give SPECIFIC trading signals for major currency pairs (EUR/USD, GBP/USD, USD/JPY, etc.). For EACH signal, you MUST include:
-
-1. Currency Pair (e.g., EUR/USD)
-2. Signal: BUY or SELL or NEUTRAL
-3. Entry Price: Specific price level to enter (e.g., 1.0850)
-4. Stop Loss (SL): Specific price level (e.g., 1.0820)
-5. Take Profit (TP): Specific price level (e.g., 1.0900)
-6. Risk/Reward Ratio (e.g., 1:2)
-7. Brief reason based on the news
-
-Format each signal clearly. Example:
-📊 EUR/USD
-Signal: BUY
-Entry: 1.0850
-SL: 1.0820
-TP: 1.0900
-R/R: 1:1.67
-Reason: Positive EU economic data supports euro strength.
+          content: "You are a professional forex trading analyst. Provide clear, actionable trading signals."
         }, {
           role: "user",
           content: summaryPrompt
