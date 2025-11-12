@@ -1,5 +1,6 @@
 import fetch from "node-fetch";
 
+// Production deployment
 export default async function handler(req, res) {
   const NEWS_API_KEY = process.env.NEWS_API_KEY;
   const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
