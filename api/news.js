@@ -1,5 +1,5 @@
 import fetch from "node-fetch";
-// Forex news fetcher with TheNewsAPI
+// Forex news fetcher with TheNewsAPI - PROD
 
 export default async function handler(req, res) {
   const NEWS_API_KEY = process.env.NEWS_API_KEY;
