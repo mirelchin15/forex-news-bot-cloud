@@ -5,6 +5,7 @@ export default async function handler(req, res) {
   const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
   const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
   const CHAT_ID = process.env.CHAT_ID;
+    const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
 
   try {
     // Step 1: Fetch forex news from TheNewsAPI
@@ -15,8 +16,38 @@ export default async function handler(req, res) {
     
     console.log("News data received:", JSON.stringify(newsData).substring(0, 200));
 
+
+        // Fallback: Try Tavily if no news from TheNewsAPI
     if (!newsData.data || newsData.data.length === 0) {
-      return res.status(200).send("No forex news found.");
+      console.log("No news from TheNewsAPI, trying Tavily...");
+      
+      const tavilyUrl = "https://api.tavily.com/search";
+      const tavilyResponse = await fetch(tavilyUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          api_key: TAVILY_API_KEY,
+          query: "forex USD EUR GBP news today",
+          search_depth: "basic",
+          max_results: 5,
+          include_domains: ["forexfactory.com", "investing.com", "fxstreet.com"]
+        })
+      });
+      
+      const tavilyData = await tavilyResponse.json();
+      console.log("Tavily response:", JSON.stringify(tavilyData).substring(0, 200));
+      
+      if (tavilyData.results && tavilyData.results.length > 0) {
+        // Convert Tavily format to newsData format
+        newsData.data = tavilyData.results.map(r => ({
+          title: r.title,
+          description: r.content || r.snippet || 'No description',
+          url: r.url
+        }));
+        console.log(`✅ Found ${newsData.data.length} news from Tavily`);
+      } else {
+        return res.status(200).send("No forex news found from both sources.");
+      }
     }
 
     // Step 2: Analyze news with OpenAI
