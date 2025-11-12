@@ -10,6 +10,7 @@ export default async function handler(req, res) {
     // 📰 Step 1: Fetch latest Forex news
     const newsUrl = `https://api.thenewsapi.com/v1/news/all?api_token=${NEWS_API_KEY}&language=en&search=forex&limit=5`;    const newsResponse = await fetch(newsUrl);
     const newsData = await newsResponse.json();
+        console.log('📰 News API Response:', JSON.stringify(newsData));
 
     if (!newsData. || newsData.data.length === 0) {
       return res.status(200).send("No forex news found.");
