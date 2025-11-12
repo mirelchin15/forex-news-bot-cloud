@@ -52,21 +52,14 @@ export default async function handler(req, res) {
 
     // Step 2: Analyze news with OpenAI
     const articles = newsData.data.slice(0, 5);
-      const summaryPrompt = `CRITICAL: Before generating signals, you MUST search the web for current forex prices.
-
-STEP 1: Search for "EUR/USD current price", "GBP/USD current price", "USD/JPY current price" to get TODAY's real-time market prices.
-
-STEP 2: Based on the news below and the current prices you found from web search, create detailed forex trading signals.
-
-News to analyze:
-${articles.map(a => `Title: ${a.title}\nDescription: ${a.description || 'No description'}`).join('\n\n')}
+        const summaryPrompt = `You are a professional forex trading analyst. Analyze these forex news articles and provide 2-3 SPECIFIC trading signals with EXACT entry points, stop loss, and take profit levels.
 
 For EACH signal, you MUST include:
 - Currency Pair (e.g., EUR/USD)
 - Signal Type: BUY or SELL
-- Entry Price (use the REAL current price from your web search)
-- Stop Loss (specific price level with pip count)
-- Take Profit 1 & TP2 (specific price levels with pip counts)
+- Entry Price (realistic current market price)
+- Stop Loss (specific price level)
+- Take Profit 1 & TP2 (specific price levels)
 - Risk/Reward Ratio
 - Brief reason (based on news impact)
 
@@ -75,20 +68,18 @@ Format your response like this:
 🔔 SIGNAL #1
 💱 Pair: EUR/USD
 📊 Action: BUY
-📍 Entry: 1.0876 (use real price from web search)
-🛑 Stop Loss: 1.0846 (-30 pips)
-🎯 TP1: 1.0926 (+50 pips)
-🎯 TP2: 1.0976 (+100 pips)
+📍 Entry: 1.0850
+🛑 Stop Loss: 1.0820 (-30 pips)
+🎯 TP1: 1.0900 (+50 pips)
+🎯 TP2: 1.0950 (+100 pips)
 ⚡ Risk/Reward: 1:2
 📰 Reason: Strong USD weakness from news
 
-IMPORTANT: You have web search enabled. USE IT to find current forex prices before generating signals!`;`;
-
+News to analyze:
+${articles.map(a => `Title: ${a.title}\nDescription: ${a.description || 'No description'}`).join('\n\n')}`;
     
     console.log("Sending to OpenAI...");
-
-        // NEW: Use OpenAI Responses API with web search
-    const openaiUrl = "https://api.openai.com/v1/responses";
+    const openaiUrl = "https://api.openai.com/v1/chat/completions";
     const aiResponse = await fetch(openaiUrl, {
       method: "POST",
       headers: {
@@ -97,21 +88,29 @@ IMPORTANT: You have web search enabled. USE IT to find current forex prices befo
       },
       body: JSON.stringify({
         model: "gpt-4o",
-        tools: [{ type:         "Authorization": "Bearer " + OPENAI_API_KEY"web_search_preview" }],
-        tool_choice: "auto"
+        messages: [{
+          role: "system",
+          content: "You are a professional forex trading analyst. Provide clear, actionable trading signals."
+        }, {
+          role: "user",
+          content: summaryPrompt
+        }],
+        temperature: 0.7,
+        max_tokens: 500
       })
     });
-    
+
     const aiData = await aiResponse.json();
     console.log("OpenAI response:", JSON.stringify(aiData).substring(0, 300));
 
-    // Extract signal from new response format
+    // Better error handling for OpenAI response
     let signalText = "No signal generated.";
     
     if (aiData.error) {
       console.error("OpenAI Error:", aiData.error);
       signalText = `❌ OpenAI Error: ${aiData.error.message || 'Unknown error'}`;
-      } else if (aiData.output && aiData.output[0] && aiData.output[0].content && aiData.output[0].content[0]) {      signalText = aiData.output[0].content[0].text;
+    } else if (aiData.choices && aiData.choices.length > 0 && aiData.choices[0].message) {
+      signalText = aiData.choices[0].message.content;
       console.log("Signal generated successfully:", signalText.substring(0, 100));
     } else {
       console.error("Unexpected OpenAI response structure:", aiData);
