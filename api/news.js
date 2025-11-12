@@ -97,8 +97,7 @@ IMPORTANT: You have web search enabled. USE IT to find current forex prices befo
       },
       body: JSON.stringify({
         model: "gpt-4o",
-        input: summaryPrompt,
-        tools: [{ type: "web_search_preview" }],
+        tools: [{ type:         "Authorization": "Bearer " + OPENAI_API_KEY"web_search_preview" }],
         tool_choice: "auto"
       })
     });
